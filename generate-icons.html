@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SmartGain Icon Generator</title>
+    <style>
+        body {
+            background: #0A0A14;
+            color: #F1F5F9;
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        canvas {
+            margin: 10px;
+            border-radius: 8px;
+        }
+
+        h2 {
+            color: #A78BFA;
+        }
+
+        p {
+            color: #94A3B8;
+            margin: 8px 0;
+        }
+
+        a {
+            color: #06B6D4;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>SmartGain — Icon Generator</h2>
+    <p>Right-click each icon below and "Save image as..." into your <code>icons/</code> folder with the correct
+        filename.</p>
+    <div id="canvases"></div>
+    <script>
+        const sizes = [16, 32, 48, 128];
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function drawIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            canvas.title = `icon${size}.png`;
+            const ctx = canvas.getContext('2d');
+            const cx = size / 2, cy = size / 2, r = size / 2;
+
+            // Background
+            const bgGrad = ctx.createRadialGradient(cx, cy * 0.7, 0, cx, cy, r);
+            bgGrad.addColorStop(0, '#1A1040');
+            bgGrad.addColorStop(1, '#0A0A14');
+            ctx.fillStyle = bgGrad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Inner glow
+            const glowGrad = ctx.createRadialGradient(cx, cy * 0.7, 0, cx, cy, r * 0.65);
+            glowGrad.addColorStop(0, 'rgba(124,58,237,0.28)');
+            glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = glowGrad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Waveform bars
+            const barCount = 7;
+            const maxH = size * 0.56;
+            const barW = Math.max(1.2, size * 0.06);
+            const spacing = (size * 0.74) / barCount;
+            const startX = cx - (barCount / 2) * spacing + spacing * 0.15;
+            const heights = [0.22, 0.5, 0.78, 1.0, 0.78, 0.5, 0.22];
+
+            heights.forEach((h, i) => {
+                const bh = h * maxH;
+                const x = startX + i * spacing;
+                const y = cy - bh / 2;
+                const grad = ctx.createLinearGradient(x, y, x, y + bh);
+                grad.addColorStop(0, '#06B6D4');
+                grad.addColorStop(0.45, '#A78BFA');
+                grad.addColorStop(1, '#7C3AED');
+                ctx.fillStyle = grad;
+                const rad = Math.min(barW / 2, 2.5);
+                roundRect(ctx, x, y, barW, bh, rad);
+                ctx.fill();
+            });
+
+            return canvas;
+        }
+
+        const wrap = document.getElementById('canvases');
+        sizes.forEach(size => {
+            const label = document.createElement('p');
+            const canvas = drawIcon(size);
+            // Show at 2x min for small sizes
+            const displaySize = Math.max(64, size);
+            canvas.style.width = displaySize + 'px';
+            canvas.style.height = displaySize + 'px';
+            canvas.style.imageRendering = 'pixelated';
+            label.innerHTML = `<b>icon${size}.png</b> — right-click → Save as <code>icons/icon${size}.png</code>`;
+            wrap.appendChild(label);
+            wrap.appendChild(canvas);
+
+            // Auto-download link
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL('image/png');
+            a.download = `icon${size}.png`;
+            a.textContent = `⬇ Download icon${size}.png`;
+            a.style.display = 'block';
+            a.style.marginBottom = '16px';
+            wrap.appendChild(a);
+        });
+    </script>
+</body>
+
+</html>
